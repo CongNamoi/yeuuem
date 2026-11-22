@@ -38,6 +38,7 @@ public partial class GameWindow : Window
         _session = session;
         _log = log;
         InitializeComponent();
+        LoadMappings();
         Title = $"PhoneBridge Game · {device.DisplayName}";
         _session.PropertyChanged += OnSessionChanged;
         CompositionTarget.Rendering += PresentFrame;
@@ -61,6 +62,7 @@ public partial class GameWindow : Window
         var options = new MirrorOptions(Value(Fps), Value(SizeLimit), Value(Bitrate),
             Codec.SelectedIndex == 0 ? "h264" : "h265");
         _streamStop = new CancellationTokenSource();
+        _touch = new RemoteTouch();
         Video.Source = null;
         Screenshot.IsEnabled = false;
         Interlocked.Exchange(ref _superseded, 0);
@@ -70,13 +72,13 @@ public partial class GameWindow : Window
         Status.Text = "Starting USB mirror…";
         SettingsPanel.IsEnabled = false;
         StreamButton.Content = "Stop Stream";
-        _stream = RunStreamAsync(options, _streamStop);
+        _stream = RunStreamAsync(options, _streamStop, _touch);
     }
 
     private static int Value(ComboBox box) =>
         int.Parse((string)((ComboBoxItem)box.SelectedItem).Content, CultureInfo.InvariantCulture);
 
-    private async Task RunStreamAsync(MirrorOptions options, CancellationTokenSource stop)
+    private async Task RunStreamAsync(MirrorOptions options, CancellationTokenSource stop, RemoteTouch touch)
     {
         try
         {
@@ -84,7 +86,7 @@ public partial class GameWindow : Window
             {
                 if (Interlocked.Exchange(ref _pending, frame) != null)
                     Interlocked.Increment(ref _superseded);
-            }, stop.Token));
+            }, touch, stop.Token));
         }
         catch (Exception) when (stop.IsCancellationRequested)
         {
@@ -98,6 +100,9 @@ public partial class GameWindow : Window
         }
         finally
         {
+            SetMappingEditor(false);
+            MappingButton.IsEnabled = false;
+            _touch = null;
             Interlocked.Exchange(ref _pending, null);
             _rateWindow.Stop();
             if (Video.Source != null) Metrics.Text = $"Frames skipped before display: {Interlocked.Read(ref _superseded)}";
@@ -114,7 +119,15 @@ public partial class GameWindow : Window
         var frame = Interlocked.Exchange(ref _pending, null);
         if (frame != null)
         {
+            var changedSize = Video.Source is not BitmapSource previous ||
+                previous.PixelWidth != frame.PixelWidth || previous.PixelHeight != frame.PixelHeight;
             Video.Source = frame;
+            if (changedSize)
+            {
+                ReleaseContacts();
+                RedrawMarkers();
+            }
+            MappingButton.IsEnabled = true;
             Screenshot.IsEnabled = true;
             Status.Text = $"USB mirror · {frame.PixelWidth} × {frame.PixelHeight}";
             _presented++;
@@ -138,6 +151,7 @@ public partial class GameWindow : Window
     {
         if (_streamStop is not { IsCancellationRequested: false } stop) return;
         Status.Text = "Stopping mirror…";
+        ReleaseContacts();
         stop.Cancel();
     }
 
@@ -166,7 +180,11 @@ public partial class GameWindow : Window
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key is not (Key.F11 or Key.F12)) return;
+        if (e.Key is not (Key.F11 or Key.F12))
+        {
+            HandleMappingKey(e);
+            return;
+        }
         e.Handled = true;
         if (e.IsRepeat) return;
         if (e.Key == Key.F11) ToggleFullscreen();
@@ -198,7 +216,11 @@ public partial class GameWindow : Window
 
     private void FullscreenClick(object sender, RoutedEventArgs e) => ToggleFullscreen();
     private void ToolbarClick(object sender, RoutedEventArgs e) => ToggleToolbar();
-    private void RotateClick(object sender, RoutedEventArgs e) => VideoRotation.Angle = (VideoRotation.Angle + 90) % 360;
+    private void RotateClick(object sender, RoutedEventArgs e)
+    {
+        ReleaseContacts();
+        VideoRotation.Angle = (VideoRotation.Angle + 90) % 360;
+    }
     private void LauncherClick(object sender, RoutedEventArgs e) => Close();
     private void SettingsClick(object sender, RoutedEventArgs e) =>
         SettingsPanel.Visibility = SettingsPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;

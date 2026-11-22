@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="PhoneBridge Game" Width="1120" Height="720" MinWidth="560" MinHeight="380"
         WindowStartupLocation="CenterScreen" Background="#101218" Foreground="White"
-        Loaded="OnLoaded" Closing="OnClosing" Closed="OnClosed" PreviewKeyDown="OnKeyDown">
+        Loaded="OnLoaded" Closing="OnClosing" Closed="OnClosed" PreviewKeyDown="OnKeyDown" PreviewKeyUp="OnKeyUp" Deactivated="OnDeactivated">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -17,11 +17,16 @@
                 </StackPanel>
             </Border>
             <Border Background="Black" ClipToBounds="True">
-                <Image x:Name="Video" Stretch="Uniform" RenderOptions.BitmapScalingMode="LowQuality">
-                    <Image.LayoutTransform>
+                <Grid x:Name="Surface" Background="Transparent" ClipToBounds="True" Focusable="True"
+                      MouseLeftButtonDown="OnTouchDown" MouseLeftButtonUp="OnTouchUp" MouseMove="OnTouchMove"
+                      LostKeyboardFocus="OnSurfaceFocusLost" LostMouseCapture="OnTouchCaptureLost" SizeChanged="OnSurfaceSizeChanged">
+                    <Grid.LayoutTransform>
                         <RotateTransform x:Name="VideoRotation" />
-                    </Image.LayoutTransform>
-                </Image>
+                    </Grid.LayoutTransform>
+                    <Image x:Name="Video" Stretch="Uniform" IsHitTestVisible="False"
+                           RenderOptions.BitmapScalingMode="LowQuality" />
+                    <Canvas x:Name="Markers" IsHitTestVisible="False" />
+                </Grid>
             </Border>
         </DockPanel>
         <ScrollViewer x:Name="Toolbar" Grid.Column="1" Background="#171C27" VerticalScrollBarVisibility="Auto">
@@ -31,7 +36,14 @@
                         <Setter Property="Margin" Value="0,0,0,6" />
                     </Style>
                 </StackPanel.Resources>
-                <Button Content="Keymapping Editor" IsEnabled="False" />
+                <Button x:Name="MappingButton" Content="Keymapping Editor" Click="MappingClick" IsEnabled="False" />
+                <StackPanel x:Name="MappingPanel" Visibility="Collapsed">
+                    <TextBlock Text="Click a spot, then press A–Z or 0–9. To move a binding, pick a new spot and press its key again."
+                               TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <TextBlock x:Name="MappingStatus" TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <ComboBox x:Name="MappingKeys" Margin="0,0,0,6" />
+                    <Button Content="Remove Selected Key" Click="RemoveMappingClick" />
+                </StackPanel>
                 <Button Content="Fullscreen (F11)" Click="FullscreenClick" />
                 <Button Content="Hide Toolbar (F12)" Click="ToolbarClick" />
                 <Button x:Name="Screenshot" Content="Screenshot" Click="ScreenshotClick" IsEnabled="False" />

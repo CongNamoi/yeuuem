@@ -16,7 +16,7 @@ public sealed class ScrcpyMirror(IAdbClient adb, IProcessRunner runner, ILogger<
 {
     public const string ServerVersion = "3.3.4";
 
-    public async Task RunAsync(string serial, MirrorOptions options, Action<BitmapSource> publish,
+    internal async Task RunAsync(string serial, MirrorOptions options, Action<BitmapSource> publish, RemoteTouch touch,
         CancellationToken token)
     {
         var adbPath = adb.ResolveAdbPath() ?? throw new AdbNotFoundException();
@@ -42,7 +42,7 @@ public sealed class ScrcpyMirror(IAdbClient adb, IProcessRunner runner, ILogger<
 
             using var server = Start(adbPath, "scrcpy", false, "-s", serial, "shell",
                 $"CLASSPATH={remoteFile}", "app_process", "/", "com.genymobile.scrcpy.Server",
-                ServerVersion, $"scid={scid}", "tunnel_forward=true", "audio=false", "control=false",
+                ServerVersion, $"scid={scid}", "tunnel_forward=true", "audio=false", "control=true", "clipboard_autosync=false",
                 "send_device_meta=false", "send_codec_meta=false", "send_frame_meta=false",
                 $"video_codec={options.Codec}", FormattableString.Invariant($"max_fps={options.MaxFps}"),
                 FormattableString.Invariant($"max_size={options.MaxSize}"),
@@ -50,6 +50,8 @@ public sealed class ScrcpyMirror(IAdbClient adb, IProcessRunner runner, ILogger<
             try
             {
                 using var socket = await ConnectAsync(assignedPort, server, token);
+                using var control = new TcpClient(AddressFamily.InterNetwork) { NoDelay = true };
+                await control.ConnectAsync(IPAddress.Loopback, assignedPort, token);
                 using var decoder = Start(ffmpeg, "FFmpeg", true, "-hide_banner", "-loglevel", "warning",
                     "-probesize", "32768", "-analyzeduration", "1",
                     "-f", options.Codec, "-threads", "1", "-i", "pipe:0", "-an",
@@ -57,16 +59,33 @@ public sealed class ScrcpyMirror(IAdbClient adb, IProcessRunner runner, ILogger<
                     "-f", "image2pipe", "pipe:1");
                 using var pumpStop = CancellationTokenSource.CreateLinkedTokenSource(token);
                 var pump = FeedAsync(socket.GetStream(), decoder.StandardInput.BaseStream, pumpStop.Token);
+                using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(token);
+                using var inputStop = new CancellationTokenSource();
+                var input = touch.WriteAsync(control.GetStream(), inputStop.Token);
+                var frames = ReadFramesAsync(decoder.StandardOutput.BaseStream, publish, () => Stop(decoder), lifetime.Token);
                 try
                 {
                     log.LogInformation("Started {Codec} mirror for {Serial} with cap {Fps} FPS",
                         options.Codec, serial, options.MaxFps);
-                    await ReadFramesAsync(decoder.StandardOutput.BaseStream, publish, () => Stop(decoder), token);
+                    if (await Task.WhenAny(input, frames) == input)
+                    {
+                        await input;
+                        token.ThrowIfCancellationRequested();
+                        throw new IOException("The input stream ended. Restart the stream.");
+                    }
+                    await frames;
                     if (pump.IsCompleted) await pump;
                     throw new IOException("The video stream ended. Check Diagnostics, then restart the stream.");
                 }
                 finally
                 {
+                    lifetime.Cancel();
+                    try { await frames; }
+                    catch (Exception ex) { log.LogDebug(ex, "Video frame reader closed"); }
+                    touch.Complete();
+                    inputStop.CancelAfter(TimeSpan.FromMilliseconds(500));
+                    try { await input; }
+                    catch (Exception ex) { log.LogDebug(ex, "Touch writer closed"); }
                     pumpStop.Cancel();
                     socket.Dispose();
                     Stop(decoder);
