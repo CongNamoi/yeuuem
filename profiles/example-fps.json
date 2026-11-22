@@ -1,0 +1,11 @@
+{
+  "name": "FPS/TPS example (placeholder for Phase 4)",
+  "mode": "fps",
+  "screen": { "width": 2712, "height": 1220 },
+  "controls": [
+    { "type": "joystick", "keys": ["W", "A", "S", "D"], "center": { "x": 0.14, "y": 0.72 }, "radius": 0.09 },
+    { "type": "cameraLook", "region": { "x": 0.45, "y": 0.0, "w": 0.55, "h": 1.0 }, "sensitivity": 1.0 },
+    { "type": "tap", "key": "LMB", "action": "fire", "pos": { "x": 0.88, "y": 0.62 } },
+    { "type": "hold", "key": "RMB", "action": "ads", "pos": { "x": 0.93, "y": 0.45 } }
+  ]
+}

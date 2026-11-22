@@ -1,0 +1,67 @@
+<Window x:Class="PhoneBridge.Wpf.GameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PhoneBridge Game" Width="1120" Height="720" MinWidth="560" MinHeight="380"
+        WindowStartupLocation="CenterScreen" Background="#101218" Foreground="White"
+        Loaded="OnLoaded" Closing="OnClosing" Closed="OnClosed" PreviewKeyDown="OnKeyDown">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0">
+            <Border DockPanel.Dock="Bottom" Background="#171C27" Padding="12,8">
+                <StackPanel>
+                    <TextBlock x:Name="Status" Text="Starting mirror…" TextWrapping="Wrap" />
+                    <TextBlock x:Name="Metrics" Foreground="#ACB6CA" />
+                </StackPanel>
+            </Border>
+            <Border Background="Black" ClipToBounds="True">
+                <Image x:Name="Video" Stretch="Uniform" RenderOptions.BitmapScalingMode="LowQuality">
+                    <Image.LayoutTransform>
+                        <RotateTransform x:Name="VideoRotation" />
+                    </Image.LayoutTransform>
+                </Image>
+            </Border>
+        </DockPanel>
+        <ScrollViewer x:Name="Toolbar" Grid.Column="1" Background="#171C27" VerticalScrollBarVisibility="Auto">
+            <StackPanel Width="172" Margin="10">
+                <StackPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Margin" Value="0,0,0,6" />
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="Keymapping Editor" IsEnabled="False" />
+                <Button Content="Fullscreen (F11)" Click="FullscreenClick" />
+                <Button Content="Hide Toolbar (F12)" Click="ToolbarClick" />
+                <Button x:Name="Screenshot" Content="Screenshot" Click="ScreenshotClick" IsEnabled="False" />
+                <Button Content="Rotate View" Click="RotateClick" />
+                <Button Content="Volume" IsEnabled="False" />
+                <Button Content="Stream Settings" Click="SettingsClick" />
+                <Button Content="Return to Launcher" Click="LauncherClick" />
+                <Button x:Name="StreamButton" Content="Start Stream" Click="StreamClick" />
+                <StackPanel x:Name="SettingsPanel" Visibility="Collapsed" Margin="0,8,0,0">
+                    <Label Content="FPS cap" Target="{Binding ElementName=Fps}" Foreground="White" />
+                    <ComboBox x:Name="Fps" SelectedIndex="1">
+                        <ComboBoxItem Content="30" /><ComboBoxItem Content="60" />
+                        <ComboBoxItem Content="90" /><ComboBoxItem Content="120" />
+                    </ComboBox>
+                    <Label Content="Max long edge (px)" Target="{Binding ElementName=SizeLimit}" Foreground="White" />
+                    <ComboBox x:Name="SizeLimit" SelectedIndex="1">
+                        <ComboBoxItem Content="960" /><ComboBoxItem Content="1280" />
+                        <ComboBoxItem Content="1600" /><ComboBoxItem Content="1920" />
+                    </ComboBox>
+                    <Label Content="Bitrate (Mbps)" Target="{Binding ElementName=Bitrate}" Foreground="White" />
+                    <ComboBox x:Name="Bitrate" SelectedIndex="1">
+                        <ComboBoxItem Content="4" /><ComboBoxItem Content="8" />
+                        <ComboBoxItem Content="12" /><ComboBoxItem Content="20" />
+                    </ComboBox>
+                    <Label Content="Codec" Target="{Binding ElementName=Codec}" Foreground="White" />
+                    <ComboBox x:Name="Codec" SelectedIndex="0">
+                        <ComboBoxItem Content="H.264" /><ComboBoxItem Content="H.265" />
+                    </ComboBox>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

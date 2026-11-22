@@ -1,0 +1,17 @@
+<UserControl x:Class="PhoneBridge.Wpf.Views.DiagnosticsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Diagnostics" Style="{StaticResource Heading}" />
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Run check" Style="{StaticResource AccentButton}" Command="{Binding RunCheckCommand}" Margin="0,0,8,0" />
+            <Button Content="Copy log" Command="{Binding CopyCommand}" Margin="0,0,8,0" />
+            <Button Content="Clear" Command="{Binding ClearCommand}" />
+        </StackPanel>
+        <ListBox Grid.Row="2" ItemsSource="{Binding Entries}" FontFamily="Consolas" FontSize="12"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+    </Grid>
+</UserControl>

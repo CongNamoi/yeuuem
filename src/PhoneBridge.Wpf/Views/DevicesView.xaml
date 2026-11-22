@@ -1,0 +1,48 @@
+<UserControl x:Class="PhoneBridge.Wpf.Views.DevicesView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="280" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="1.3*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Devices" Style="{StaticResource Heading}" Grid.ColumnSpan="3" />
+
+        <DockPanel Grid.Row="1">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
+                <Button Content="Restart adb" Command="{Binding RestartAdbCommand}" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="6,6">
+                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock Foreground="{StaticResource MutedBrush}">
+                                <Run Text="{Binding Serial, Mode=OneWay}" /><Run Text="  -  " /><Run Text="{Binding StateText, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <Border Grid.Column="2" Grid.Row="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+            <StackPanel>
+                <TextBlock Text="{Binding StateHint}" Style="{StaticResource Muted}" Margin="0,0,0,12" />
+                <StackPanel Orientation="Horizontal"><TextBlock Text="Manufacturer" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.Manufacturer}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="Model" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.Model}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="Android" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.AndroidText}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="HyperOS / MIUI" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.OsSkinText}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="Screen" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.ScreenText}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="Density (dpi)" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.Density}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="CPU ABI" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.CpuAbi}" Style="{StaticResource Value}" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="Security patch" Style="{StaticResource Label}" /><TextBlock Text="{Binding Session.Details.SecurityPatch}" Style="{StaticResource Value}" /></StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
