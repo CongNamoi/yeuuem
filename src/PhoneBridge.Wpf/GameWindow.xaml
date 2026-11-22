@@ -59,7 +59,8 @@
                         <ComboBoxItem Content="90" /><ComboBoxItem Content="120" />
                     </ComboBox>
                     <Label Content="Max long edge (px)" Target="{Binding ElementName=SizeLimit}" Foreground="White" />
-                    <ComboBox x:Name="SizeLimit" SelectedIndex="1">
+                    <ComboBox x:Name="SizeLimit" SelectedIndex="0">
+                        <ComboBoxItem Content="Original" />
                         <ComboBoxItem Content="960" /><ComboBoxItem Content="1280" />
                         <ComboBoxItem Content="1600" /><ComboBoxItem Content="1920" />
                     </ComboBox>

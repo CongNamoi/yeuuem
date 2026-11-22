@@ -59,7 +59,7 @@ public partial class GameWindow : Window
             return;
         }
 
-        var options = new MirrorOptions(Value(Fps), Value(SizeLimit), Value(Bitrate),
+        var options = new MirrorOptions(Value(Fps), SizeLimit.SelectedIndex == 0 ? 0 : Value(SizeLimit), Value(Bitrate),
             Codec.SelectedIndex == 0 ? "h264" : "h265");
         _streamStop = new CancellationTokenSource();
         _touch = new RemoteTouch();

@@ -35,7 +35,7 @@ For a Debug build from Visual Studio 2022, use the .NET desktop development work
 1. Enable **USB debugging** in HyperOS developer options. Connect the phone with a data cable, unlock it, and accept the USB debugging prompt.
 2. Run `PhoneBridge.exe`. Open **Devices**, select the phone, press **Connect**, then **Open Game Window**.
 3. Use **F11** for borderless fullscreen and **F12** to toggle the toolbar. **Rotate View** changes the PC view orientation. **Screenshot** saves the current frame in its source orientation.
-4. To change the FPS cap, resolution cap, bitrate, or codec, stop the stream, open **Stream Settings**, choose the new values, then start it again.
+4. To change the FPS cap, resolution cap, bitrate, or codec, stop the stream, open **Stream Settings**, choose the new values, then start it again. **Original** is the default and applies no maximum edge limit. Android may report a lower size if its encoder needs alignment or falls back. The game window shows the decoded size.
 5. After a disconnect, reconnect the same device in the launcher and start the stream again. Close the game window and reopen it for a different device. Use **Diagnostics** for ADB, scrcpy server, and FFmpeg messages.
 
 ## Touch and key mapping preview
